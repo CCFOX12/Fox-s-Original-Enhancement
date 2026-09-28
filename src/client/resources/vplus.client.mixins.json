@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "vplus.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ContainerScreenAccess",
+    "InventoryScreenMixin",
+    "EntityLightMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

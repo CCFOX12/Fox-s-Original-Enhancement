@@ -1,0 +1,23 @@
+---
+description: 需要去掉的文件移入开发目录的「被删除文件」，不真正删除
+alwaysApply: true
+---
+
+# 不真正删除
+
+需要去掉的文件或目录，移动到：
+
+`D:\mod\Fox's Original Enhancement\被删除文件`
+
+移动前在该目录下建一层时间戳文件夹（`yyyyMMdd-HHmmss`），再按原来的相对路径放下，便于事后审查。
+
+## 禁止
+
+- Delete 工具、`rm`、`Remove-Item`、清空文件、git clean，以及其它真正销毁
+- 把待删内容放进游戏实例的 `mods`、`resourcepacks`、`datapacks`、`shaderpacks`，或本工程的 `src`
+- 移动「被删除文件」文件夹本身
+
+## 允许
+
+- 用移动完成「删掉」。Gradle 不会把这个文件夹当源码编译，游戏实例也不会读它
+- 审查后若用户当轮明确说可以真正删除，只删已经列出的那些路径

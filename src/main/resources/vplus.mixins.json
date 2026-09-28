@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "package": "vplus.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "LivingEntityAttributeMixin",
+    "LivingEntityHurtMixin",
+    "PlayerAttackMixin",
+    "ItemOffhandMixin",
+    "ShieldAngleMixin",
+    "ShieldBreakMixin",
+    "KineticWeaponMixin",
+    "ItemCraftMixin",
+    "SmithingMenuMixin",
+    "GrindstoneMenuMixin",
+    "ProjectileWeaponMixin",
+    "InventoryMenuMixin",
+    "MenuSlotInvoker",
+    "LivingEntityLoadoutMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "ingredient": "minecraft:gold_ingot",
+  "result": {
+    "id": "vplus:enchanted_gold"
+  },
+  "experience": 1.0,
+  "cookingtime": 200
+}

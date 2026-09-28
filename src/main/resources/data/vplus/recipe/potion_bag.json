@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "LLL",
+    "LBL",
+    "LLL"
+  ],
+  "key": {
+    "L": "minecraft:leather",
+    "B": "minecraft:glass_bottle"
+  },
+  "result": {
+    "id": "vplus:potion_bag",
+    "count": 1
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "KSK",
+    "K K"
+  ],
+  "key": {
+    "K": "vplus:iron_throwing_knife",
+    "S": "minecraft:string"
+  },
+  "result": {
+    "id": "vplus:unique_knife",
+    "count": 1
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "C C",
+    " L ",
+    "C C"
+  ],
+  "key": {
+    "C": "minecraft:iron_chain",
+    "L": "minecraft:leather"
+  },
+  "result": {
+    "id": "vplus:lining",
+    "count": 1
+  }
+}

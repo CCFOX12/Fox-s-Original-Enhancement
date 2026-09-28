@@ -1,0 +1,12 @@
+---
+description: 本目录是 Fabric 开发工程；桌面 mod 只放文档和待提交资产
+alwaysApply: true
+---
+
+# 目录分工
+
+本目录 `D:\mod\Fox's Original Enhancement` 是 Fabric 工程和资产的开发目录。改代码、改资源在这里进行。
+
+`C:\Users\陈乐扬\Desktop\mod` 只放要提交的资产和开发文档。不要把 Gradle 工程搬回那个文件夹。
+
+`D:\MC\.minecraft\versions\1.21.11-Fabric 0.19.5` 已废弃，不要在那里继续开发。NeoForge 工程先不做。

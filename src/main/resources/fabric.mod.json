@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "vplus",
+	"version": "${version}",
+	"name": "原版增强",
+	"description": "原版向的武器、装扮与挂带。包含重标定的战斗、右侧物品栏、锻纹、镶嵌和技巧模板。",
+	"authors": [],
+	"license": "All Rights Reserved",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"vplus.VPlusMod"
+		],
+		"client": [
+			"vplus.client.VPlusClient"
+		]
+	},
+	"mixins": [
+		"vplus.mixins.json",
+		{
+			"config": "vplus.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
