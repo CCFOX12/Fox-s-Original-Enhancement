@@ -38,7 +38,7 @@ public final class LoadoutRules {
 		}
 		String kind = stack.get(vplus.item.ModComponents.SLOT_KIND);
 		if (slot >= LoadoutSlots.DISPLAY_HEAD && slot <= LoadoutSlots.UTILITY_FEET) {
-			return expectedKind(slot).equals(kind);
+			return expectedKind(slot).equals(kind) || (slot == LoadoutSlots.DISPLAY_COAT && "display_set".equals(kind));
 		}
 		if (slot == LoadoutSlots.PAULDRON) {
 			return "gear_pauldron".equals(kind);

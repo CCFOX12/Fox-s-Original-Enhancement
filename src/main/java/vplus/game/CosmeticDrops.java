@@ -40,30 +40,32 @@ public final class CosmeticDrops {
 	private static float chance(String mob) {
 		return switch (mob) {
 			case "warden" -> 0.18f;
-			case "ender_dragon", "wither" -> 0.20f;
-			case "zombie", "husk", "drowned", "skeleton", "stray", "bogged", "creeper", "spider", "witch", "pillager", "vindicator", "piglin", "zombified_piglin" -> 0.08f;
-			default -> 0.10f;
+			case "wither" -> 0.20f;
+			case "zombie", "husk", "drowned", "skeleton", "stray", "bogged", "wither_skeleton", "witch", "pillager", "vindicator", "evoker", "piglin", "zombified_piglin", "piglin_brute" -> 0.08f;
+			case "creeper", "spider", "cave_spider", "slime", "magma_cube", "blaze", "ghast", "shulker", "phantom", "guardian", "elder_guardian", "breeze", "creaking", "silverfish", "endermite", "vex", "ravager", "hoglin", "zoglin", "zombie_horse", "camel_husk", "zombie_nautilus" -> 0.10f;
+			default -> 0.0f;
 		};
 	}
 
 	private static String piece(String mob, float roll) {
 		return switch (mob) {
-			case "ender_dragon" -> "dragon_horn";
+			case "zombie", "piglin", "zombified_piglin" -> roll < 0.5f ? mob + "_coat" : mob + "_legs";
+			case "husk", "drowned" -> switch ((int) (roll * 3)) {
+				case 0 -> mob + "_head";
+				case 1 -> mob + "_coat";
+				default -> mob + "_legs";
+			};
+			case "skeleton" -> "skeleton_coat";
+			case "stray" -> "stray_coat";
+			case "bogged" -> "bogged_coat";
+			case "wither_skeleton" -> "wither_skeleton_coat";
+			case "witch", "enderman", "warden", "piglin_brute" -> roll < 0.5f ? mob + "_head" : mob + "_coat";
+			case "pillager" -> "pillager_coat";
+			case "vindicator" -> "vindicator_coat";
+			case "evoker" -> "evoker_coat";
 			case "wither" -> "wither_coat";
-			case "enderman", "warden" -> roll < 0.5f ? mob + "_head" : mob + "_coat";
 			case "creeper", "spider", "cave_spider", "slime", "magma_cube", "blaze", "ghast", "shulker", "phantom", "guardian", "elder_guardian", "breeze", "creaking", "silverfish", "endermite", "vex", "ravager", "hoglin", "zoglin", "zombie_horse", "camel_husk", "zombie_nautilus" -> mob + "_hide";
-			default -> {
-				if (roll < 0.30f) {
-					yield mob + "_head";
-				}
-				if (roll < 0.70f) {
-					yield mob + "_coat";
-				}
-				if (roll < 0.90f) {
-					yield mob + "_legs";
-				}
-				yield mob + "_feet";
-			}
+			default -> null;
 		};
 	}
 }

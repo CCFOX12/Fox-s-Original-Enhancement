@@ -19,6 +19,7 @@ public abstract class AvatarSkinMixin {
 	private void vplus$skins(Avatar entity, AvatarRenderState state, float partialTick, CallbackInfo ci) {
 		if (entity instanceof Player player) {
 			state.setData(SkinComposite.PIECES, SkinComposite.read(player));
+			state.setData(SkinComposite.ON_ARMOR, vplus.cosmetic.CosmeticLayer.armor(player));
 		} else {
 			state.setData(SkinComposite.PIECES, java.util.List.of());
 		}

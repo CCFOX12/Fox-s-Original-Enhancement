@@ -4,7 +4,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import vplus.item.ModComponents;
 import vplus.loadout.Loadout;
 import vplus.loadout.LoadoutSlots;
 
@@ -33,17 +32,10 @@ public final class CosmeticFollow {
 	}
 
 	private static int piecesOf(ItemStack stack, String mobId) {
-		if (!mobId.equals(stack.get(ModComponents.GEMS))) {
+		if (!mobId.equals(CosmeticData.mob(stack))) {
 			return 0;
 		}
-		String count = stack.get(ModComponents.AFFIX);
-		if (count == null) {
-			return 1;
-		}
-		try {
-			return Integer.parseInt(count);
-		} catch (NumberFormatException exception) {
-			return 1;
-		}
+		int pieces = CosmeticData.pieces(stack);
+		return pieces <= 0 ? 1 : pieces;
 	}
 }

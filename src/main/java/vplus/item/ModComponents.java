@@ -16,6 +16,8 @@ public final class ModComponents {
 	public static final DataComponentType<String> TECHNIQUE = register("technique", DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
 	public static final DataComponentType<Integer> SOCKETS = register("sockets", DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT).build());
 	public static final DataComponentType<String> GEMS = register("gems", DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
+	public static final DataComponentType<String> COSMETIC_MOB = register("cosmetic_mob", DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
+	public static final DataComponentType<Integer> COSMETIC_PIECES = register("cosmetic_pieces", DataComponentType.<Integer>builder().persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT).build());
 
 	private ModComponents() {
 	}

@@ -86,7 +86,8 @@ public class StandMenu extends AbstractContainerMenu {
 
 		@Override
 		public boolean mayPlace(ItemStack stack) {
-			return this.kind.equals(stack.get(ModComponents.SLOT_KIND));
+			String actual = stack.get(ModComponents.SLOT_KIND);
+			return this.kind.equals(actual) || ("display_coat".equals(this.kind) && "display_set".equals(actual));
 		}
 
 		@Override

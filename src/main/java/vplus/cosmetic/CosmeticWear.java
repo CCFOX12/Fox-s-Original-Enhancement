@@ -167,7 +167,7 @@ public final class CosmeticWear {
 	public static int loadoutIndex(String kind) {
 		return switch (kind) {
 			case "display_head" -> 0;
-			case "display_coat" -> 1;
+			case "display_coat", "display_set" -> 1;
 			case "display_legs" -> 2;
 			case "display_feet" -> 3;
 			case "utility_head" -> 4;
@@ -181,7 +181,7 @@ public final class CosmeticWear {
 	public static EquipmentSlot armorSlot(String kind) {
 		return switch (kind) {
 			case "display_head", "utility_head" -> EquipmentSlot.HEAD;
-			case "display_coat", "utility_coat" -> EquipmentSlot.CHEST;
+			case "display_coat", "utility_coat", "display_set" -> EquipmentSlot.CHEST;
 			case "display_legs", "utility_legs" -> EquipmentSlot.LEGS;
 			case "display_feet", "utility_feet" -> EquipmentSlot.FEET;
 			case null, default -> null;

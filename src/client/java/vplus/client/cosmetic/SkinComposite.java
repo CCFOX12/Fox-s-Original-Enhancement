@@ -35,17 +35,55 @@ public final class SkinComposite {
 	public static final net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey<Gear> GEAR = net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey.create(() -> "vplus_worn_gear");
 	public static final net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey<List<Piece>> STAND = net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey.create(() -> "vplus_stand_skins");
 	public static final net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey<Integer> ENTITY = net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey.create(() -> "vplus_entity_id");
+	public static final net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey<Boolean> ON_ARMOR = net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey.create(() -> "vplus_cosmetic_on_armor");
 	public static final Identifier STEVE = Identifier.withDefaultNamespace("textures/entity/player/wide/steve.png");
 	private static final Identifier CLEAR = Identifier.fromNamespaceAndPath("vplus", "stand_clear");
 
 	private static final int MAGENTA = 0xFFF800F8;
 	private static final int BLACK = 0xFF000000;
 	private static final Map<Integer, Cached> CACHE = new ConcurrentHashMap<>();
+	private static final Map<Integer, Cached> ARMOR_CACHE = new ConcurrentHashMap<>();
+	private static final Map<Integer, Cached> ARMOR_LEFT = new ConcurrentHashMap<>();
 	private static final Map<Identifier, NativeImage> SOURCES = new ConcurrentHashMap<>();
 	private static final Map<String, Boolean> COVERS = new ConcurrentHashMap<>();
 	private static final java.util.Set<Identifier> MISSING = ConcurrentHashMap.newKeySet();
 
 	private SkinComposite() {
+	}
+
+	public static void reload() {
+		for (Integer entityId : List.copyOf(CACHE.keySet())) {
+			release(CACHE, entityId);
+		}
+		for (Integer entityId : List.copyOf(ARMOR_CACHE.keySet())) {
+			release(ARMOR_CACHE, entityId);
+		}
+		for (Integer entityId : List.copyOf(ARMOR_LEFT.keySet())) {
+			release(ARMOR_LEFT, entityId);
+		}
+		for (NativeImage image : SOURCES.values()) {
+			image.close();
+		}
+		SOURCES.clear();
+		COVERS.clear();
+		MISSING.clear();
+	}
+
+	public static void forget(int entityId) {
+		release(CACHE, entityId);
+		release(ARMOR_CACHE, entityId);
+		release(ARMOR_LEFT, entityId);
+	}
+
+	private static void release(Map<Integer, Cached> cache, int entityId) {
+		Cached cached = cache.remove(entityId);
+		if (cached == null) {
+			return;
+		}
+		Minecraft minecraft = Minecraft.getInstance();
+		if (minecraft != null) {
+			minecraft.getTextureManager().release(cached.id);
+		}
 	}
 
 	public static List<Piece> read(Player player) {
@@ -67,39 +105,112 @@ public final class SkinComposite {
 
 	public static boolean hides(LivingEntity entity, EquipmentSlot slot) {
 		Part wanted = partOf(slot);
-		if (wanted == null) {
+		if (wanted == null || entity instanceof Player) {
 			return false;
 		}
 		List<Piece> pieces = List.of();
-		if (entity instanceof Player player) {
-			pieces = read(player);
-		} else if (entity instanceof ArmorStand stand) {
+		if (entity instanceof ArmorStand stand) {
 			pieces = fromLoadout(StandLoadout.get(stand));
 		}
 		for (Piece piece : pieces) {
+			if (set(piece.slot()) && opaque(piece.mob(), wanted)) {
+				return true;
+			}
 			if (partOf(piece.slot()) == wanted && opaque(piece.mob(), wanted)) {
 				return true;
 			}
 		}
 		Piece worn = pieceOf(entity.getItemBySlot(slot));
-		return worn != null && partOf(worn.slot()) == wanted && opaque(worn.mob(), wanted);
+		if (worn != null && (set(worn.slot()) || partOf(worn.slot()) == wanted) && opaque(worn.mob(), wanted)) {
+			return true;
+		}
+		if (slot != EquipmentSlot.CHEST) {
+			Piece chest = pieceOf(entity.getItemBySlot(EquipmentSlot.CHEST));
+			if (chest != null && set(chest.slot()) && opaque(chest.mob(), wanted)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static Identifier texture(AvatarRenderState state, Identifier baseId) {
 		Integer entityId = state.getData(ENTITY);
-		return cached(entityId == null ? state.id : entityId, baseId, stamps(state.getData(PIECES), state.getData(GEAR)));
+		List<Piece> pieces = Boolean.TRUE.equals(state.getData(ON_ARMOR)) ? List.of() : state.getData(PIECES);
+		return cached(CACHE, "skin_overlay/", entityId == null ? state.id : entityId, baseId, stamps(pieces, state.getData(GEAR)));
+	}
+
+	public static boolean worn(List<Piece> pieces, EquipmentSlot slot) {
+		Part wanted = partOf(slot);
+		if (pieces == null || wanted == null) {
+			return false;
+		}
+		for (Piece piece : pieces) {
+			if (set(piece.slot()) || partOf(piece.slot()) == wanted) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public record ArmorDecal(Identifier main, Identifier left) {
+	}
+
+	public static ArmorDecal armorDecal(AvatarRenderState state) {
+		if (!Boolean.TRUE.equals(state.getData(ON_ARMOR))) {
+			return null;
+		}
+		Integer entityId = state.getData(ENTITY);
+		int id = entityId == null ? state.id : entityId;
+		List<Stamp> ordered = new ArrayList<>(stamps(state.getData(PIECES), null));
+		if (ordered.isEmpty()) {
+			return null;
+		}
+		ordered.sort(Comparator.comparingInt(Stamp::rank));
+		String nextKey = key(CLEAR, ordered);
+		Cached main = ARMOR_CACHE.computeIfAbsent(id, value -> new Cached(value, "armor_overlay/"));
+		Cached left = ARMOR_LEFT.computeIfAbsent(id, value -> new Cached(value, "armor_left/"));
+		if (nextKey.equals(main.key) && nextKey.equals(left.key)) {
+			return new ArmorDecal(main.id, left.id);
+		}
+		NativeImage skin = compose(CLEAR, ordered);
+		if (skin == null) {
+			return null;
+		}
+		flattenOntoBase(skin);
+		NativeImage mainImage = armorSheet(skin, false);
+		NativeImage leftImage = armorSheet(skin, true);
+		skin.close();
+		store(main, id, mainImage);
+		store(left, id, leftImage);
+		main.key = nextKey;
+		left.key = nextKey;
+		return new ArmorDecal(main.id, left.id);
 	}
 
 	public static Identifier standTexture(HumanoidRenderState state) {
 		Integer entityId = state.getData(ENTITY);
-		return cached(entityId == null ? 0 : entityId, CLEAR, stamps(state.getData(STAND), state.getData(GEAR)));
+		return cached(CACHE, "skin_overlay/", entityId == null ? 0 : entityId, CLEAR, stamps(state.getData(STAND), state.getData(GEAR)));
+	}
+
+	public static StandParts pieceParts(List<Piece> pieces) {
+		return parts(stamps(pieces, null));
 	}
 
 	public static StandParts standParts(HumanoidRenderState state) {
+		return parts(stamps(state.getData(STAND), state.getData(GEAR)));
+	}
+
+	private static StandParts parts(List<Stamp> worn) {
 		boolean head = false;
 		boolean coat = false;
 		boolean legs = false;
-		for (Stamp stamp : stamps(state.getData(STAND), state.getData(GEAR))) {
+		for (Stamp stamp : worn) {
+			if (set(stamp.kind())) {
+				head = true;
+				coat = true;
+				legs = true;
+				continue;
+			}
 			switch (partOf(stamp.kind())) {
 				case HEAD -> head = true;
 				case COAT -> coat = true;
@@ -111,14 +222,14 @@ public final class SkinComposite {
 		return new StandParts(head, coat, legs);
 	}
 
-	private static Identifier cached(int entityId, Identifier baseId, List<Stamp> stamps) {
+	private static Identifier cached(Map<Integer, Cached> cache, String prefix, int entityId, Identifier baseId, List<Stamp> stamps) {
 		if (baseId == null || stamps.isEmpty()) {
 			return null;
 		}
 		List<Stamp> ordered = new ArrayList<>(stamps);
 		ordered.sort(Comparator.comparingInt(Stamp::rank));
 		String nextKey = key(baseId, ordered);
-		Cached cached = CACHE.computeIfAbsent(entityId, Cached::new);
+		Cached cached = cache.computeIfAbsent(entityId, id -> new Cached(id, prefix));
 		if (nextKey.equals(cached.key)) {
 			return cached.id;
 		}
@@ -126,22 +237,92 @@ public final class SkinComposite {
 		if (image == null) {
 			return null;
 		}
+		store(cached, entityId, image);
+		cached.key = nextKey;
+		return cached.id;
+	}
+
+	private static void store(Cached cached, int entityId, NativeImage image) {
 		if (cached.texture == null) {
 			cached.texture = new DynamicTexture(() -> "vplus-skin-" + entityId, image);
 			Minecraft.getInstance().getTextureManager().register(cached.id, cached.texture);
 			cached.texture.upload();
-		} else {
-			NativeImage pixels = cached.texture.getPixels();
-			if (pixels != null && pixels.getWidth() == image.getWidth() && pixels.getHeight() == image.getHeight()) {
-				pixels.copyFrom(image);
-				image.close();
-			} else {
-				cached.texture.setPixels(image);
-			}
-			cached.texture.upload();
+			return;
 		}
-		cached.key = nextKey;
-		return cached.id;
+		NativeImage pixels = cached.texture.getPixels();
+		if (pixels != null && pixels.getWidth() == image.getWidth() && pixels.getHeight() == image.getHeight()) {
+			pixels.copyFrom(image);
+			image.close();
+		} else {
+			cached.texture.setPixels(image);
+		}
+		cached.texture.upload();
+	}
+
+	private static void flattenOntoBase(NativeImage image) {
+		cover(image, 32, 0, 0, 0, 32, 16);
+		cover(image, 16, 32, 16, 16, 24, 16);
+		cover(image, 40, 32, 40, 16, 16, 16);
+		cover(image, 48, 48, 32, 48, 16, 16);
+		cover(image, 0, 32, 0, 16, 16, 16);
+		cover(image, 0, 48, 16, 48, 16, 16);
+	}
+
+	private static NativeImage armorSheet(NativeImage skin, boolean left) {
+		NativeImage sheet = new NativeImage(64, 32, true);
+		if (!left) {
+			blit(skin, 0, 0, sheet, 0, 0, 32, 16);
+			blit(skin, 16, 16, sheet, 16, 16, 24, 16);
+			blit(skin, 40, 16, sheet, 40, 16, 16, 16);
+			blit(skin, 0, 16, sheet, 0, 16, 16, 16);
+			return sheet;
+		}
+		copyLimbFlipped(skin, 32, 48, sheet, 40, 16);
+		copyLimbFlipped(skin, 16, 48, sheet, 0, 16);
+		return sheet;
+	}
+
+	private static void cover(NativeImage image, int sx, int sy, int dx, int dy, int width, int height) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				int pixel = pixel(image, sx + x, sy + y);
+				if ((pixel >>> 24) != 0) {
+					image.setPixel(dx + x, dy + y, pixel);
+				}
+			}
+		}
+	}
+
+	private static void blit(NativeImage src, int sx, int sy, NativeImage dst, int dx, int dy, int width, int height) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				dst.setPixel(dx + x, dy + y, pixel(src, sx + x, sy + y));
+			}
+		}
+	}
+
+	private static void copyLimbFlipped(NativeImage src, int sx, int sy, NativeImage dst, int dx, int dy) {
+		flipFace(src, sx, sy, dst, dx, dy, 4, 0, 4, 4);
+		flipFace(src, sx, sy, dst, dx, dy, 8, 0, 4, 4);
+		flipFace(src, sx, sy, dst, dx, dy, 0, 4, 4, 12);
+		flipFace(src, sx, sy, dst, dx, dy, 4, 4, 4, 12);
+		flipFace(src, sx, sy, dst, dx, dy, 8, 4, 4, 12);
+		flipFace(src, sx, sy, dst, dx, dy, 12, 4, 4, 12);
+	}
+
+	private static void flipFace(NativeImage src, int sx, int sy, NativeImage dst, int dx, int dy, int localX, int localY, int width, int height) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				dst.setPixel(dx + localX + x, dy + localY + y, pixel(src, sx + localX + width - 1 - x, sy + localY + y));
+			}
+		}
+	}
+
+	private static int pixel(NativeImage image, int x, int y) {
+		if (x < 0 || y < 0 || x >= image.getWidth() || y >= image.getHeight()) {
+			return 0;
+		}
+		return image.getPixel(x, y);
 	}
 
 	private static String key(Identifier baseId, List<Stamp> stamps) {
@@ -156,7 +337,7 @@ public final class SkinComposite {
 		List<Stamp> stamps = new ArrayList<>();
 		if (pieces != null) {
 			for (Piece piece : pieces) {
-				if (partOf(piece.slot()) != null) {
+				if (partOf(piece.slot()) != null || set(piece.slot())) {
 					stamps.add(new Stamp(piece.mob(), piece.slot(), familyRank(piece.slot())));
 				}
 			}
@@ -199,19 +380,24 @@ public final class SkinComposite {
 			}
 		}
 		for (Stamp stamp : stamps) {
+			if (set(stamp.kind())) {
+				paint(image, stamp, Part.HEAD);
+				paint(image, stamp, Part.COAT);
+				continue;
+			}
 			Part part = partOf(stamp.kind());
-			if (part == Part.LEGS || part == Part.FEET) {
+			if (part == Part.LEGS || part == Part.FEET || part == null) {
 				continue;
 			}
 			paint(image, stamp, part);
 		}
 		for (Stamp stamp : stamps) {
-			if (partOf(stamp.kind()) == Part.LEGS) {
+			if (set(stamp.kind()) || partOf(stamp.kind()) == Part.LEGS) {
 				paint(image, stamp, Part.LEGS);
 			}
 		}
 		for (Stamp stamp : stamps) {
-			if (partOf(stamp.kind()) == Part.FEET) {
+			if (set(stamp.kind()) || partOf(stamp.kind()) == Part.FEET) {
 				paint(image, stamp, Part.FEET);
 			}
 		}
@@ -568,20 +754,18 @@ public final class SkinComposite {
 			return null;
 		}
 		String kind = stack.get(ModComponents.SLOT_KIND);
-		if (partOf(kind) == null) {
+		if (partOf(kind) == null && !set(kind)) {
 			return null;
 		}
-		String mob = stack.get(ModComponents.GEMS);
-		return new Piece(mob == null ? "" : mob, kind);
+		return new Piece(vplus.cosmetic.CosmeticData.mob(stack), kind);
 	}
 
 	private static void add(List<Piece> pieces, Loadout loadout, int slot, String kind) {
 		ItemStack stack = loadout.get(slot);
-		if (stack.isEmpty() || !kind.equals(stack.get(ModComponents.SLOT_KIND))) {
+		if (stack.isEmpty() || (!kind.equals(stack.get(ModComponents.SLOT_KIND)) && !("display_coat".equals(kind) && set(stack.get(ModComponents.SLOT_KIND))))) {
 			return;
 		}
-		String mob = stack.get(ModComponents.GEMS);
-		pieces.add(new Piece(mob == null ? "" : mob, kind));
+		pieces.add(new Piece(vplus.cosmetic.CosmeticData.mob(stack), kind));
 	}
 
 	private static int familyRank(String kind) {
@@ -592,6 +776,10 @@ public final class SkinComposite {
 			return 1;
 		}
 		return 0;
+	}
+
+	private static boolean set(String kind) {
+		return "display_set".equals(kind);
 	}
 
 	private static Part partOf(String kind) {
@@ -647,8 +835,8 @@ public final class SkinComposite {
 		private DynamicTexture texture;
 		private String key = "";
 
-		private Cached(int entityId) {
-			this.id = Identifier.fromNamespaceAndPath("vplus", "skin_overlay/" + entityId);
+		private Cached(int entityId, String prefix) {
+			this.id = Identifier.fromNamespaceAndPath("vplus", prefix + entityId);
 		}
 	}
 }

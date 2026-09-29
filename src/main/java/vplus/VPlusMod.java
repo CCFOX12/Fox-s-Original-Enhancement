@@ -28,6 +28,7 @@ public final class VPlusMod implements ModInitializer {
 	public void onInitialize() {
 		ModComponents.register();
 		LoadoutAttachments.register();
+		vplus.cosmetic.CosmeticLayer.register();
 		StandLoadout.register();
 		ModMenus.register();
 		ModEntities.register();

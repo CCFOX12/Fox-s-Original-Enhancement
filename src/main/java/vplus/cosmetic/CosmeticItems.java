@@ -18,20 +18,29 @@ public final class CosmeticItems {
 	}
 
 	public static void register() {
-		humanoid("zombie", "僵尸");
-		humanoid("husk", "尸壳");
-		humanoid("drowned", "溺尸");
-		humanoid("skeleton", "骷髅");
-		humanoid("stray", "流浪者");
-		humanoid("bogged", "沼骸");
-		humanoid("wither_skeleton", "凋灵骷髅");
-		humanoid("witch", "女巫");
-		humanoid("pillager", "掠夺者");
-		humanoid("vindicator", "卫道士");
-		humanoid("evoker", "唤魔者");
-		humanoid("piglin", "猪灵");
-		humanoid("zombified_piglin", "僵尸猪灵");
-		humanoid("piglin_brute", "猪灵蛮兵");
+		piece("zombie_coat", "僵尸外套", "display_coat", "zombie", 1);
+		piece("zombie_legs", "僵尸裤装", "display_legs", "zombie", 1);
+		piece("husk_head", "尸壳头饰", "display_head", "husk", 1);
+		piece("husk_coat", "尸壳外套", "display_coat", "husk", 1);
+		piece("husk_legs", "尸壳裤装", "display_legs", "husk", 1);
+		piece("drowned_head", "溺尸头饰", "display_head", "drowned", 1);
+		piece("drowned_coat", "溺尸外套", "display_coat", "drowned", 1);
+		piece("drowned_legs", "溺尸裤装", "display_legs", "drowned", 1);
+		piece("skeleton_coat", "骷髅骨架", "display_coat", "skeleton", 1);
+		piece("stray_coat", "流浪者披肩", "display_coat", "stray", 1);
+		piece("bogged_coat", "沼骸披肩", "display_coat", "bogged", 1);
+		piece("wither_skeleton_coat", "凋零骷髅骨架", "display_coat", "wither_skeleton", 1);
+		piece("witch_head", "女巫头饰", "display_head", "witch", 1);
+		piece("witch_coat", "女巫外套", "display_coat", "witch", 1);
+		piece("pillager_coat", "掠夺者长袍", "display_set", "pillager", 4);
+		piece("vindicator_coat", "卫道士长袍", "display_set", "vindicator", 4);
+		piece("evoker_coat", "唤魔者长袍", "display_set", "evoker", 4);
+		piece("piglin_coat", "猪灵外套", "display_coat", "piglin", 1);
+		piece("piglin_legs", "猪灵裤装", "display_legs", "piglin", 1);
+		piece("zombified_piglin_coat", "僵尸猪灵外套", "display_coat", "zombified_piglin", 1);
+		piece("zombified_piglin_legs", "僵尸猪灵裤装", "display_legs", "zombified_piglin", 1);
+		piece("piglin_brute_head", "腐败头骨", "display_head", "piglin_brute", 1);
+		piece("piglin_brute_coat", "腐败躯干", "display_coat", "piglin_brute", 1);
 		whole("creeper", "苦力怕");
 		whole("spider", "蜘蛛");
 		whole("cave_spider", "洞穴蜘蛛");
@@ -56,9 +65,8 @@ public final class CosmeticItems {
 		whole("zombie_nautilus", "僵尸鹦鹉螺");
 		piece("enderman_head", "末影人头饰", "display_head", "enderman", 1);
 		piece("enderman_coat", "末影人外套", "display_coat", "enderman", 1);
-		piece("warden_head", "监守者头饰", "display_head", "warden", 1);
+		piece("warden_head", "远古触角", "display_head", "warden", 1);
 		piece("warden_coat", "监守者外套", "display_coat", "warden", 1);
-		piece("dragon_horn", "龙角", "display_head", "ender_dragon", 1);
 		piece("wither_coat", "凋灵外套", "display_coat", "wither", 1);
 		MINER_HAT = piece("miner_hat", "矿工头灯帽", "utility_head", "", 0);
 		piece("pirate_bandana", "海盗头巾", "display_head", "", 0);
@@ -94,13 +102,6 @@ public final class CosmeticItems {
 		cloth("toolsmith", "工具匠", "display_coat", "工具匠围裙");
 	}
 
-	private static void humanoid(String mob, String zh) {
-		piece(mob + "_head", zh + "头饰", "display_head", mob, 1);
-		piece(mob + "_coat", zh + "外套", "display_coat", mob, 1);
-		piece(mob + "_legs", zh + "裤装", "display_legs", mob, 1);
-		piece(mob + "_feet", zh + "鞋履", "display_feet", mob, 1);
-	}
-
 	private static void whole(String mob, String zh) {
 		piece(mob + "_hide", zh + "整件外观", "display_coat", mob, 4);
 	}
@@ -121,8 +122,8 @@ public final class CosmeticItems {
 		properties.component(ModComponents.SLOT_KIND, slot);
 		equip(properties, slot);
 		if (!mob.isEmpty()) {
-			properties.component(ModComponents.GEMS, mob);
-			properties.component(ModComponents.AFFIX, Integer.toString(pieces));
+			properties.component(ModComponents.COSMETIC_MOB, mob);
+			properties.component(ModComponents.COSMETIC_PIECES, pieces);
 		}
 		Item item = net.minecraft.core.Registry.register(net.minecraft.core.registries.BuiltInRegistries.ITEM, key, new Item(properties));
 		ModItems.CREATIVE.add(item);
@@ -135,7 +136,7 @@ public final class CosmeticItems {
 	private static void equip(Item.Properties properties, String slot) {
 		EquipmentSlot equipment = switch (slot) {
 			case "display_head", "utility_head" -> EquipmentSlot.HEAD;
-			case "display_coat", "utility_coat" -> EquipmentSlot.CHEST;
+			case "display_coat", "utility_coat", "display_set" -> EquipmentSlot.CHEST;
 			case "display_legs", "utility_legs" -> EquipmentSlot.LEGS;
 			case "display_feet", "utility_feet" -> EquipmentSlot.FEET;
 			default -> null;

@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "vplus:item/wither_skeleton_head"
+    "model": "vplus:item/wither_skeleton_coat"
   }
 }

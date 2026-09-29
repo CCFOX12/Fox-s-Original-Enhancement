@@ -24,7 +24,7 @@ public final class LoomJobs {
 				return InteractionResult.PASS;
 			}
 			ItemStack stack = player.getItemInHand(hand);
-			if (!"pattern".equals(stack.get(ModComponents.SLOT_KIND))) {
+			if (!"pattern".equals(stack.get(ModComponents.SLOT_KIND)) || !player.isShiftKeyDown()) {
 				return InteractionResult.PASS;
 			}
 			if (!world.isClientSide()) {
@@ -53,7 +53,8 @@ public final class LoomJobs {
 				wool += stack.getCount();
 			}
 		}
-		if (wool < 4) {
+		ItemStack patternStack = findPattern(player, pattern);
+		if (patternStack.isEmpty() || wool < 4) {
 			return;
 		}
 		int left = 4;
@@ -67,10 +68,7 @@ public final class LoomJobs {
 			stack.shrink(take);
 			left -= take;
 		}
-		ItemStack patternStack = findPattern(player, pattern);
-		if (!patternStack.isEmpty()) {
-			patternStack.shrink(1);
-		}
+		patternStack.shrink(1);
 		String cloth = pattern.substring(0, pattern.length() - "_pattern".length()) + "_cloth";
 		Item clothItem = BuiltInRegistries.ITEM.get(net.minecraft.resources.Identifier.fromNamespaceAndPath("vplus", cloth)).map(net.minecraft.core.Holder::value).orElse(Items.AIR);
 		if (clothItem != Items.AIR) {
