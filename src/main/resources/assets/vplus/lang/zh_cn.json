@@ -1,5 +1,13 @@
 {
   "itemGroup.vplus.main": "原版增强",
+  "itemGroup.vplus.weapons": "武器与盾",
+  "itemGroup.vplus.display": "装饰装扮",
+  "itemGroup.vplus.utility": "功能装扮与样布",
+  "itemGroup.vplus.rest": "其余装备与材料",
+  "container.vplus.stand": "盔甲架",
+  "container.vplus.column.display": "装饰",
+  "container.vplus.column.utility": "功能",
+  "container.vplus.column.armor": "盔甲",
   "key.vplus.shoulder": "肩带交换",
   "key.vplus.belt": "腰带交换",
   "key.vplus.back": "背带交换",

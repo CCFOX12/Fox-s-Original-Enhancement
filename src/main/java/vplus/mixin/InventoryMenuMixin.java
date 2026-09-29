@@ -44,6 +44,10 @@ public abstract class InventoryMenuMixin {
 	@Inject(method = "quickMoveStack", at = @At("HEAD"), cancellable = true)
 	private void vplus$quick(Player player, int index, CallbackInfoReturnable<ItemStack> cir) {
 		Slot slot = ((InventoryMenu) (Object) this).slots.get(index);
+		if (index >= 9 && index <= 44 && vplus.cosmetic.CosmeticWear.equip(player, slot.getItem())) {
+			cir.setReturnValue(ItemStack.EMPTY);
+			return;
+		}
 		if (!(slot.container instanceof LoadoutContainer) || slot.getItem().isEmpty()) {
 			return;
 		}

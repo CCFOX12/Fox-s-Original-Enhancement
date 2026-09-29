@@ -1,5 +1,6 @@
 package vplus.cosmetic;
 
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -19,8 +20,11 @@ public final class CosmeticFollow {
 		String mobId = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).getPath();
 		int pieces = 0;
 		Loadout loadout = Loadout.get(subject);
-		for (int slot = LoadoutSlots.DISPLAY_HEAD; slot <= LoadoutSlots.DISPLAY_FEET; slot++) {
+		for (int slot = LoadoutSlots.DISPLAY_HEAD; slot <= LoadoutSlots.UTILITY_FEET; slot++) {
 			pieces += piecesOf(loadout.get(slot), mobId);
+		}
+		for (EquipmentSlot slot : new EquipmentSlot[] { EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET }) {
+			pieces += piecesOf(subject.getItemBySlot(slot), mobId);
 		}
 		if (pieces <= 0) {
 			return 1.0;

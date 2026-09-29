@@ -1,7 +1,11 @@
 package vplus.cosmetic;
 
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.equipment.Equippable;
 import vplus.VPlusMod;
 import vplus.item.ItemStats;
 import vplus.item.ModComponents;
@@ -109,14 +113,43 @@ public final class CosmeticItems {
 	private static Item piece(String path, String name, String slot, String mob, int pieces) {
 		var key = ItemStats.key(path);
 		var properties = new Item.Properties().setId(key).stacksTo(slot.equals("pattern") ? 16 : 1);
-		properties.component(DataComponents.ITEM_MODEL, net.minecraft.resources.Identifier.fromNamespaceAndPath(VPlusMod.MOD_ID, "placeholder"));
+		var model = net.minecraft.resources.Identifier.fromNamespaceAndPath(VPlusMod.MOD_ID, "placeholder");
+		if (VanillaMobSkins.get(mob) != null && slot.startsWith("display_")) {
+			model = net.minecraft.resources.Identifier.fromNamespaceAndPath(VPlusMod.MOD_ID, path);
+		}
+		properties.component(DataComponents.ITEM_MODEL, model);
 		properties.component(ModComponents.SLOT_KIND, slot);
+		equip(properties, slot);
 		if (!mob.isEmpty()) {
 			properties.component(ModComponents.GEMS, mob);
 			properties.component(ModComponents.AFFIX, Integer.toString(pieces));
 		}
 		Item item = net.minecraft.core.Registry.register(net.minecraft.core.registries.BuiltInRegistries.ITEM, key, new Item(properties));
 		ModItems.CREATIVE.add(item);
+		if (vplus.cosmetic.CosmeticWear.armorSlot(slot) != null) {
+			vplus.cosmetic.CosmeticDispense.register(item);
+		}
 		return item;
+	}
+
+	private static void equip(Item.Properties properties, String slot) {
+		EquipmentSlot equipment = switch (slot) {
+			case "display_head", "utility_head" -> EquipmentSlot.HEAD;
+			case "display_coat", "utility_coat" -> EquipmentSlot.CHEST;
+			case "display_legs", "utility_legs" -> EquipmentSlot.LEGS;
+			case "display_feet", "utility_feet" -> EquipmentSlot.FEET;
+			default -> null;
+		};
+		if (equipment == null) {
+			return;
+		}
+		properties.component(DataComponents.EQUIPPABLE, Equippable.builder(equipment)
+				.setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER)
+				.setEquipOnInteract(true)
+				.setSwappable(true)
+				.setDispensable(true)
+				.setDamageOnHurt(false)
+				.setAllowedEntities(EntityType.PLAYER, EntityType.ARMOR_STAND)
+				.build());
 	}
 }

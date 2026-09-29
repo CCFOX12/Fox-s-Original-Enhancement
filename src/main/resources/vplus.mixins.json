@@ -16,7 +16,8 @@
     "ProjectileWeaponMixin",
     "InventoryMenuMixin",
     "MenuSlotInvoker",
-    "LivingEntityLoadoutMixin"
+    "LivingEntityLoadoutMixin",
+    "ArmorStandMixin"
   ],
   "injectors": {
     "defaultRequire": 1

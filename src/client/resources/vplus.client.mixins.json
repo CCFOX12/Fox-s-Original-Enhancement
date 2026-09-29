@@ -3,9 +3,12 @@
   "package": "vplus.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "AvatarSkinMixin",
+    "HumanoidEquipmentMixin",
     "ContainerScreenAccess",
     "InventoryScreenMixin",
-    "EntityLightMixin"
+    "EntityLightMixin",
+    "MenuScreensMixin"
   ],
   "injectors": {
     "defaultRequire": 1

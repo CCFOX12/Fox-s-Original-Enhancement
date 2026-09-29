@@ -11,12 +11,14 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import vplus.combat.Grip;
 import vplus.combat.HitContext;
 import vplus.loadout.Lining;
 import vplus.weapon.DamageKind;
 import vplus.weapon.Profile;
+import vplus.weapon.Profiles;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityHurtMixin {
@@ -60,7 +62,11 @@ public abstract class LivingEntityHurtMixin {
 	@Inject(method = "isBlocking", at = @At("RETURN"), cancellable = true)
 	private void vplus$offhandBlock(CallbackInfoReturnable<Boolean> cir) {
 		LivingEntity self = (LivingEntity) (Object) this;
-		if (self instanceof Player player && cir.getReturnValue() && Grip.of(player).suppressOffhand && player.getUsedItemHand() == net.minecraft.world.InteractionHand.OFF_HAND) {
+		if (!(self instanceof Player player) || !cir.getReturnValue() || player.getUsedItemHand() != InteractionHand.OFF_HAND) {
+			return;
+		}
+		Profile main = Profiles.of(player.getMainHandItem().getItem());
+		if (main != null && main.suppressesOffhand()) {
 			cir.setReturnValue(false);
 		}
 	}

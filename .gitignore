@@ -19,6 +19,9 @@ run/
 # quarantine (moved-aside files, not source)
 被删除文件/
 
+# scratch moved off the desktop mod folder
+tools/
+
 # java
 hs_err_*.log
 replay_*.log

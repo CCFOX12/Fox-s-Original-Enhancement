@@ -13,7 +13,10 @@ import vplus.item.ModGear;
 import vplus.item.ModItems;
 import vplus.item.ModTabs;
 import vplus.item.VanillaRetune;
+import vplus.cosmetic.CosmeticWear;
+import vplus.cosmetic.StandLoadout;
 import vplus.loadout.LoadoutAttachments;
+import vplus.menu.ModMenus;
 import vplus.net.SwapPayload;
 import vplus.weapon.Bench;
 
@@ -25,6 +28,8 @@ public final class VPlusMod implements ModInitializer {
 	public void onInitialize() {
 		ModComponents.register();
 		LoadoutAttachments.register();
+		StandLoadout.register();
+		ModMenus.register();
 		ModEntities.register();
 		ModItems.register();
 		ModGear.register();
@@ -35,6 +40,7 @@ public final class VPlusMod implements ModInitializer {
 		SwapPayload.register();
 		LoomJobs.register();
 		ModLoot.register();
+		CosmeticWear.register();
 		Bench.log();
 		LOGGER.info("原版增强已加载");
 	}
